@@ -1,14 +1,30 @@
-import { AccountEntity } from "./account.entity";
+import { AccountEntity, AccountId } from './account.entity';
+import { ActivityEntity } from './activity.entity';
+import { MoneyEntity } from './money.entity';
 
 export class ActivityWindowEntity {
-    private readonly _activities: AccountEntity[] = [];
+  private readonly _activities: ActivityEntity[] = [];
 
-    get activities(): AccountEntity[] {
-        return this._activities
-    }
+  get activities(): ActivityEntity[] {
+    return this._activities;
+  }
 
-    addActivity(activity: AccountEntity) {
-        this.activities.push(activity);
-        return this
-    }
+  addActivity(activity: ActivityEntity) {
+    this.activities.push(activity);
+    return this;
+  }
+
+  public calculateBalance(accountId: AccountId): MoneyEntity {
+    const depositeBalance = this.activities
+      .filter(activity => activity.targetAccountId === accountId)
+      .map(activity => activity.money)
+      .reduce(MoneyEntity.add, MoneyEntity.ZERO())
+
+    const withdrawalBalance = this.activities
+      .filter(activity => activity.sourceAccountId === accountId)
+      .map(activity => activity.money)
+      .reduce(MoneyEntity.add, MoneyEntity.ZERO())
+
+      return MoneyEntity.add(depositeBalance, withdrawalBalance.negate())
+  }
 }
